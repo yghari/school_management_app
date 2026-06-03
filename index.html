@@ -26,8 +26,8 @@ h3{font-size:15px;font-weight:500}
 .btn.success{background:var(--success);color:#000}
 .btn.danger{background:var(--danger);color:#fff}
 .btn.sm{padding:4px 10px;font-size:12px}
-input,select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:13px;padding:8px 12px;width:100%;outline:none}
-input:focus,select:focus{border-color:var(--accent)}
+input,select,textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:13px;padding:8px 12px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px}
 .field{margin-bottom:12px}
 .row{display:flex;gap:12px}
@@ -46,7 +46,7 @@ tr:hover td{background:var(--bg3)}
 .panel{display:none;padding:1.5rem}
 .panel.active{display:block}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:flex;align-items:center;justify-content:center;padding:1rem}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);width:100%;max-width:550px;max-height:90vh;overflow-y:auto}
 .modal-head{padding:1.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .modal-body{padding:1.25rem}
 .modal-foot{padding:1rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
@@ -64,6 +64,7 @@ tr:hover td{background:var(--bg3)}
 .summary-row{display:flex;justify-content:space-between;padding:6px 0}
 .summary-total{font-size:16px;font-weight:700;color:var(--accent);border-top:1px solid var(--border);margin-top:6px;padding-top:10px}
 .payment-section{background:var(--bg4);border-radius:var(--r);padding:1rem;margin-top:1rem}
+.student-detail{font-size:12px;color:var(--text2);margin-top:4px}
 </style>
 </head>
 <body>
@@ -85,6 +86,7 @@ let appData = {
 let currentTab = 'checkout';
 let selectedStudent = null;
 let selectedBooks = [];
+let editingStudentId = null;
 
 // ============================================
 // INITIALIZE DEFAULT DATA
@@ -103,11 +105,11 @@ function initDefaultData() {
   ];
   
   appData.students = [
-    { id: 's1', name: 'Amina Hosni', class: 'CP', paid: 0, remaining: 0, books: [] },
-    { id: 's2', name: 'Ayoub Beqioui', class: 'CE1', paid: 0, remaining: 0, books: [] },
-    { id: 's3', name: 'Chahd Hmimssa', class: 'CP', paid: 0, remaining: 0, books: [] },
-    { id: 's4', name: 'Yasser Laghlaouat', class: 'CE2', paid: 0, remaining: 0, books: [] },
-    { id: 's5', name: 'Ziad Fardi', class: '6ème', paid: 0, remaining: 0, books: [] },
+    { id: 's1', name: 'Amina Hosni', class: 'CP', phone: '06 12 34 56 78', address: 'Casablanca', paid: 0, remaining: 0, books: [] },
+    { id: 's2', name: 'Ayoub Beqioui', class: 'CE1', phone: '06 23 45 67 89', address: 'Rabat', paid: 0, remaining: 0, books: [] },
+    { id: 's3', name: 'Chahd Hmimssa', class: 'CP', phone: '06 34 56 78 90', address: 'Tanger', paid: 0, remaining: 0, books: [] },
+    { id: 's4', name: 'Yasser Laghlaouat', class: 'CE2', phone: '06 45 67 89 01', address: 'Fès', paid: 0, remaining: 0, books: [] },
+    { id: 's5', name: 'Ziad Fardi', class: '6ème', phone: '06 56 78 90 12', address: 'Marrakech', paid: 0, remaining: 0, books: [] },
   ];
   
   saveData();
@@ -180,7 +182,11 @@ function searchStudent() {
   } else {
     resultsDiv.innerHTML = matches.map(s => `
       <div style="padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-        <div><strong>${escapeHtml(s.name)}</strong><br><span style="font-size:12px;color:var(--text3)">Class: ${escapeHtml(s.class)}</span></div>
+        <div>
+          <strong>${escapeHtml(s.name)}</strong>
+          <div class="student-detail">📞 ${escapeHtml(s.phone || 'No phone')} | 📍 ${escapeHtml(s.address || 'No address')}</div>
+          <div style="font-size:12px;color:var(--text3)">Class: ${escapeHtml(s.class)}</div>
+        </div>
         <button class="btn primary sm" onclick="selectStudent('${s.id}')">Select</button>
       </div>
     `).join('');
@@ -225,7 +231,11 @@ function selectStudent(studentId) {
   document.getElementById('studentInfo').innerHTML = `
     <div class="card" style="margin-bottom:1rem;background:var(--bg4)">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <div><strong>${escapeHtml(selectedStudent.name)}</strong><br><span style="font-size:12px">Class: ${escapeHtml(selectedStudent.class)}</span></div>
+        <div>
+          <strong>${escapeHtml(selectedStudent.name)}</strong>
+          <div class="student-detail">📞 ${escapeHtml(selectedStudent.phone || 'No phone')} | 📍 ${escapeHtml(selectedStudent.address || 'No address')}</div>
+          <div style="font-size:12px">Class: ${escapeHtml(selectedStudent.class)}</div>
+        </div>
         <button class="btn sm" onclick="clearSelection()">Change Student</button>
       </div>
     </div>
@@ -336,38 +346,78 @@ function clearSelection() {
 }
 
 // ============================================
-// STUDENT MANAGEMENT
+// STUDENT MANAGEMENT (with Phone & Address)
 // ============================================
 function openAddStudentModal(presetName = '') {
+  editingStudentId = null;
   const modal = document.getElementById('addStudentModal');
+  document.getElementById('modalTitle').innerText = 'Add New Student';
   document.getElementById('newStudentName').value = presetName;
+  document.getElementById('newStudentPhone').value = '';
+  document.getElementById('newStudentAddress').value = '';
   const classSelect = document.getElementById('newStudentClass');
   classSelect.innerHTML = appData.classes.map(c => `<option value="${c}">${c}</option>`).join('');
   modal.style.display = 'flex';
 }
 
-function closeAddStudentModal() {
-  document.getElementById('addStudentModal').style.display = 'none';
+function openEditStudentModal(studentId) {
+  const student = appData.students.find(s => s.id === studentId);
+  if (!student) return;
+  
+  editingStudentId = studentId;
+  const modal = document.getElementById('addStudentModal');
+  document.getElementById('modalTitle').innerText = 'Edit Student';
+  document.getElementById('newStudentName').value = student.name;
+  document.getElementById('newStudentPhone').value = student.phone || '';
+  document.getElementById('newStudentAddress').value = student.address || '';
+  const classSelect = document.getElementById('newStudentClass');
+  classSelect.innerHTML = appData.classes.map(c => `<option value="${c}" ${student.class === c ? 'selected' : ''}>${c}</option>`).join('');
+  modal.style.display = 'flex';
 }
 
-function addNewStudent() {
+function closeAddStudentModal() {
+  document.getElementById('addStudentModal').style.display = 'none';
+  editingStudentId = null;
+}
+
+function saveStudent() {
   const name = document.getElementById('newStudentName').value.trim();
+  const phone = document.getElementById('newStudentPhone').value.trim();
+  const address = document.getElementById('newStudentAddress').value.trim();
   const className = document.getElementById('newStudentClass').value;
   
   if (!name) { showToast('Student name is required', true); return; }
   
-  const newStudent = {
-    id: uid(),
-    name: name,
-    class: className,
-    paid: 0,
-    remaining: 0,
-    books: []
-  };
+  if (editingStudentId) {
+    // Update existing student
+    const index = appData.students.findIndex(s => s.id === editingStudentId);
+    if (index !== -1) {
+      appData.students[index] = {
+        ...appData.students[index],
+        name: name,
+        phone: phone,
+        address: address,
+        class: className
+      };
+      showToast(`Student ${name} updated!`);
+    }
+  } else {
+    // Add new student
+    const newStudent = {
+      id: uid(),
+      name: name,
+      class: className,
+      phone: phone,
+      address: address,
+      paid: 0,
+      remaining: 0,
+      books: []
+    };
+    appData.students.push(newStudent);
+    showToast(`Student ${name} added!`);
+  }
   
-  appData.students.push(newStudent);
   saveData();
-  showToast(`Student ${name} added!`);
   closeAddStudentModal();
   renderStudentsList();
   
@@ -382,18 +432,23 @@ function renderStudentsList() {
   if (!tbody) return;
   
   if (appData.students.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No students added yet</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No students added yet</div></td></tr>';
     return;
   }
   
   tbody.innerHTML = appData.students.map(s => `
     <tr>
-      <td style="font-weight:500">${escapeHtml(s.name)}</td>
-      <td><span class="tag blue">${escapeHtml(s.class)}</span></td>
-      <td>${s.books?.length || 0}</td>
-      <td style="color:#22c55e">${(s.paid || 0).toFixed(2)} DH</td>
-      <td style="color:${s.remaining > 0 ? '#f59e0b' : '#22c55e'}">${(s.remaining || 0).toFixed(2)} DH</td>
-      <td><button class="btn sm danger" onclick="deleteStudent('${s.id}')">🗑️</button></td>
+      <td style="font-weight:500">${escapeHtml(s.name)}</div></td>
+      <td><span class="tag blue">${escapeHtml(s.class)}</span></div></td>
+      <td>${escapeHtml(s.phone || '—')}</div></td>
+      <td>${escapeHtml(s.address || '—')}</div></td>
+      <td>${s.books?.length || 0}</div></td>
+      <td style="color:#22c55e">${(s.paid || 0).toFixed(2)} DH</div></td>
+      <td style="color:${s.remaining > 0 ? '#f59e0b' : '#22c55e'}">${(s.remaining || 0).toFixed(2)} DH</div></td>
+      <td>
+        <button class="btn sm" onclick="openEditStudentModal('${s.id}')">✏️</button>
+        <button class="btn sm danger" onclick="deleteStudent('${s.id}')">🗑️</button>
+      </div></tr>
     </tr>
   `).join('');
 }
@@ -465,21 +520,21 @@ function renderBooksList() {
   if (!tbody) return;
   
   if (appData.books.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No books added yet</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No books added yet</div></td></tr>';
     return;
   }
   
   tbody.innerHTML = appData.books.map(b => `
     <tr>
-      <td style="font-weight:500">${escapeHtml(b.title)}</td>
-      <td><span class="tag blue">${escapeHtml(b.class)}</span></td>
-      <td>${b.price.toFixed(2)} DH</td>
-      <td>${b.quantity}</td>
-      <td style="color:${b.available < 5 ? '#ef4444' : '#22c55e'}">${b.available}</td>
+      <td style="font-weight:500">${escapeHtml(b.title)}</div></td>
+      <td><span class="tag blue">${escapeHtml(b.class)}</span></div></td>
+      <td>${b.price.toFixed(2)} DH</div></td>
+      <td>${b.quantity}</div></td>
+      <td style="color:${b.available < 5 ? '#ef4444' : '#22c55e'}">${b.available}</div></td>
       <td>
         <button class="btn sm" onclick="openBookModal('${b.id}')">✏️</button>
         <button class="btn sm danger" onclick="deleteBook('${b.id}')">🗑️</button>
-      </td>
+      </div></td>
     </tr>
   `).join('');
 }
@@ -552,7 +607,9 @@ function renderApp() {
         </div>
         <div style="overflow-x:auto">
           <table style="width:100%">
-            <thead><tr><th>Name</th><th>Class</th><th>Books</th><th>Paid</th><th>Remaining</th><th></th></tr></thead>
+            <thead>
+              <tr><th>Name</th><th>Class</th><th>Phone</th><th>Address</th><th>Books</th><th>Paid</th><th>Remaining</th><th></th></tr>
+            </thead>
             <tbody id="studentsList"></tbody>
           </table>
         </div>
@@ -574,15 +631,19 @@ function renderApp() {
       </div>
     </div>
     
-    <!-- Add Student Modal -->
+    <!-- Add/Edit Student Modal -->
     <div id="addStudentModal" class="modal-overlay" style="display:none">
       <div class="modal">
-        <div class="modal-head"><h3>Add New Student</h3><button class="btn sm" onclick="closeAddStudentModal()">✕</button></div>
+        <div class="modal-head"><h3 id="modalTitle">Add New Student</h3><button class="btn sm" onclick="closeAddStudentModal()">✕</button></div>
         <div class="modal-body">
-          <div class="field"><label>Student Name</label><input type="text" id="newStudentName" placeholder="Full name"></div>
-          <div class="field"><label>Class</label><select id="newStudentClass"></select></div>
+          <div class="field"><label>Student Name *</label><input type="text" id="newStudentName" placeholder="Full name"></div>
+          <div class="row">
+            <div class="field"><label>Phone Number</label><input type="tel" id="newStudentPhone" placeholder="06 XX XX XX XX"></div>
+            <div class="field"><label>Class</label><select id="newStudentClass"></select></div>
+          </div>
+          <div class="field"><label>Address</label><input type="text" id="newStudentAddress" placeholder="City, Address"></div>
         </div>
-        <div class="modal-foot"><button class="btn" onclick="closeAddStudentModal()">Cancel</button><button class="btn primary" onclick="addNewStudent()">Add Student</button></div>
+        <div class="modal-foot"><button class="btn" onclick="closeAddStudentModal()">Cancel</button><button class="btn primary" onclick="saveStudent()">Save Student</button></div>
       </div>
     </div>
     
@@ -613,8 +674,9 @@ function renderApp() {
   window.processPayment = processPayment;
   window.clearSelection = clearSelection;
   window.openAddStudentModal = openAddStudentModal;
+  window.openEditStudentModal = openEditStudentModal;
   window.closeAddStudentModal = closeAddStudentModal;
-  window.addNewStudent = addNewStudent;
+  window.saveStudent = saveStudent;
   window.deleteStudent = deleteStudent;
   window.openBookModal = openBookModal;
   window.closeBookModal = closeBookModal;
